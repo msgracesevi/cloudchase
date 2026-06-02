@@ -847,21 +847,86 @@ function toast(msg, type = '') {
 }
 
 // =================== SIDEBAR TOGGLE (MOBILE) ===================
+// ── Sidebar: overlay-based on mobile, collapse on tablet ──
 function toggleSidebar() {
-  const s = document.getElementById('sidebar');
-  const isOpen = s.classList.toggle('open');
-  s.classList.toggle('hidden', !isOpen);
-  document.getElementById('main').classList.toggle('full', !isOpen);
+  const s       = document.getElementById('sidebar');
+  const overlay = document.getElementById('sidebar-overlay');
+  const main    = document.getElementById('main');
+  const footer  = document.getElementById('footer');
+  const isMobile = window.innerWidth <= 768;
+
+  if (isMobile) {
+    // Slide-in drawer with backdrop
+    const opening = s.classList.toggle('open');
+    if (overlay) overlay.style.display = opening ? 'block' : 'none';
+  } else {
+    // Icon-only collapse on tablet/desktop
+    const collapsed = s.classList.toggle('collapsed');
+    main.classList.toggle('full', collapsed);
+    if (footer) footer.classList.toggle('full', collapsed);
+  }
 }
 
-if (window.innerWidth <= 768) {
-  document.getElementById('main').classList.add('full');
-  document.getElementById('footer').classList.add('full');
+// Mobile search toggle
+function toggleMobileSearch() {
+  const bar = document.getElementById('search-bar-wrap');
+  if (!bar) return;
+  const isVisible = bar.style.display !== 'none' && bar.style.display !== '';
+  if (isVisible) {
+    bar.style.display = 'none';
+  } else {
+    bar.style.cssText = 'display:block !important;position:fixed;top:64px;left:0;right:0;background:var(--bg2);padding:10px 16px;border-bottom:1px solid var(--border);z-index:99';
+    bar.querySelector('input') && bar.querySelector('input').focus();
+  }
 }
 
-window.addEventListener('resize', () => {
+// Apply correct initial layout
+function applyResponsiveLayout() {
+  const w      = window.innerWidth;
+  const s      = document.getElementById('sidebar');
+  const main   = document.getElementById('main');
+  const footer = document.getElementById('footer');
   const toggle = document.getElementById('menu-toggle');
-  if (toggle) toggle.style.display = window.innerWidth <= 768 ? 'block' : 'none';
+  const sToggle= document.getElementById('search-toggle');
+
+  if (w <= 768) {
+    // Mobile: sidebar off-screen, main full-width
+    s.classList.remove('collapsed', 'open');
+    main.classList.add('full');
+    if (footer) footer.classList.add('full');
+    if (toggle) toggle.style.display = 'block';
+    if (sToggle) sToggle.style.display = 'flex';
+  } else if (w <= 1024) {
+    // Tablet: collapsed icon sidebar
+    s.classList.add('collapsed');
+    s.classList.remove('open');
+    main.classList.add('full');
+    if (footer) footer.classList.add('full');
+    if (toggle) toggle.style.display = 'block';
+    if (sToggle) sToggle.style.display = 'none';
+    // restore search bar
+    const bar = document.getElementById('search-bar-wrap');
+    if (bar) bar.style.cssText = '';
+  } else {
+    // Desktop: full sidebar
+    s.classList.remove('collapsed', 'open');
+    main.classList.remove('full');
+    if (footer) footer.classList.remove('full');
+    if (toggle) toggle.style.display = 'none';
+    if (sToggle) sToggle.style.display = 'none';
+    const bar = document.getElementById('search-bar-wrap');
+    if (bar) bar.style.cssText = '';
+    const overlay = document.getElementById('sidebar-overlay');
+    if (overlay) overlay.style.display = 'none';
+  }
+}
+
+applyResponsiveLayout();
+
+let _resizeTimer;
+window.addEventListener('resize', () => {
+  clearTimeout(_resizeTimer);
+  _resizeTimer = setTimeout(applyResponsiveLayout, 80);
 });
 // =================== REVIEWS ===================
 let reviewStarValue = 0;

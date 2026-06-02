@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CloudChase Vape Shop</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="vape-shop.css">
+<style>.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}</style>
+</head>
+<body>
+
+<!-- AGE GATE -->
+<div id="age-gate">
+  <h1>CLOUDCHASE</h1>
+  <p>This website contains products intended for use by adults 18 years of age or older. By entering this site, you confirm you are of legal age to purchase tobacco/vaping products in your region.</p>
+  <div class="age-actions">
+    <button class="btn btn-primary" onclick="enterSite()">I am 18 or older — Enter</button>
+    <button class="btn btn-outline" onclick="window.location.href='https://google.com'">Exit</button>
+  </div>
+  <p class="warning">[!] Vaping products contain nicotine, an addictive substance. Not for sale to minors. Keep out of reach of children.</p>
+</div>
+
+<!-- TOAST CONTAINER -->
+<div id="toast"></div>
+
+<!-- CART OVERLAY -->
+<div class="cart-overlay" id="cart-overlay" onclick="closeCart()"></div>
+
+<!-- CART DRAWER -->
+<div id="cart-drawer">
+  <div class="cart-header">
+    <h3>Your Cart (<span id="cart-count-drawer">0</span>)</h3>
+    <button class="btn btn-icon btn-outline" onclick="closeCart()"></button>
+  </div>
+  <div class="cart-items" id="cart-items-list"></div>
+  <div class="cart-footer">
+    <div class="cart-totals">
+      <div class="cart-row"><span>Subtotal</span><span id="cart-subtotal">₱0.00</span></div>
+      <div class="cart-row"><span>Shipping</span><span>₱50.00</span></div>
+      <div class="cart-row total"><span>Total</span><span id="cart-total">₱0.00</span></div>
+    </div>
+    <button class="btn btn-primary btn-full" onclick="goCheckout()">Proceed to Checkout →</button>
+    <button class="btn btn-outline btn-full" onclick="closeCart()">Continue Shopping</button>
+  </div>
+</div>
+
+<!-- NAVBAR -->
+<nav id="navbar">
+  <button id="menu-toggle" onclick="toggleSidebar()"></button>
+  <div class="nav-brand" onclick="showPage('home')">CLOUD<span>CHASE</span></div>
+  <div class="search-bar">
+    <label for="search-input" class="sr-only">Search products</label>
+    <span class="search-icon">&#x1F50D;</span>
+    <input type="text" placeholder="Search products, brands..." id="search-input" oninput="handleSearch(this.value)" autocomplete="off">
+    <div class="search-results" id="search-results"></div>
+  </div>
+  <div class="nav-actions">
+    <button class="nav-btn" onclick="showPage('wishlist')"> <span class="mono" id="wish-nav-count" style="display:none">0</span></button>
+    <button class="nav-btn" onclick="openCart()" id="cart-nav-btn">🛒 Cart<span class="badge" id="cart-badge">0</span></button>
+    <div class="nav-btn-wrapper" id="auth-area">
+      <div id="guest-btns">
+        <button class="btn btn-outline btn-sm" onclick="showModal('login')">Login</button>
+        <button class="btn btn-primary btn-sm" onclick="showModal('register')">Sign Up</button>
+      </div>
+      <div id="user-area">
+        <div class="nav-avatar" id="nav-avatar" onclick="toggleProfileDropdown()">U</div>
+        <div class="profile-dropdown hidden" id="profile-dropdown">
+          <div class="profile-info">
+            <div class="name" id="dd-name">User</div>
+            <div class="email" id="dd-email">user@email.com</div>
+          </div>
+          <div class="dropdown-item" onclick="showPage('history');closeDropdown()"><span class="icon">📦</span><span>Order History</span></div>
+          <div class="dropdown-item" onclick="showPage('wishlist');closeDropdown()"><span class="icon">♡</span><span>Wishlist</span></div>
+          <div class="dropdown-item" onclick="showPage('settings');closeDropdown()"><span class="icon">⚙️</span><span>Settings</span></div>
+          <div class="dropdown-item danger" onclick="logout()"><span class="icon">🚪</span><span>Logout</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- SIDEBAR -->
+<aside id="sidebar">
+  <div class="sidebar-section">
+    <div class="sidebar-label">Menu</div>
+    <div class="sidebar-link active" onclick="showPage('home');setActive(this)" id="nav-home"><span class="icon">🏠</span>Home</div>
+    <div class="sidebar-link" onclick="showPage('shop');setActive(this)" id="nav-shop"><span class="icon">🛍️</span>Shop</div>
+    <div class="sidebar-link" onclick="showPage('deals');setActive(this)" id="nav-deals"><span class="icon">🔥</span>Hot Deals</div>
+  </div>
+  <div class="sidebar-divider"></div>
+  <div class="sidebar-section">
+    <div class="sidebar-label">Categories</div>
+    <div class="sidebar-link" onclick="filterCategory('all');setActive(this)"><span class="icon">⊞</span>All Products</div>
+    <div class="sidebar-link" onclick="filterCategory('devices');setActive(this)"><span class="icon">💨</span>Devices</div>
+    <div class="sidebar-link" onclick="filterCategory('pods');setActive(this)"><span class="icon">🔋</span>Pod Systems</div>
+    <div class="sidebar-link" onclick="filterCategory('juice');setActive(this)"><span class="icon">💧</span>E-Liquids</div>
+    <div class="sidebar-link" onclick="filterCategory('coils');setActive(this)"><span class="icon">🌀</span>Coils</div>
+    <div class="sidebar-link" onclick="filterCategory('accessories');setActive(this)"><span class="icon">🎒</span>Accessories</div>
+  </div>
+  <div class="sidebar-divider"></div>
+  <div class="sidebar-section">
+    <div class="sidebar-label">Support</div>
+    <div class="sidebar-link" onclick="showPage('contact');setActive(this)" id="nav-contact"><span class="icon">💬</span>Contact Us</div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main id="main">
+
+<!-- HOME PAGE -->
+<div class="page active" id="page-home">
+  <div class="hero">
+    <div class="hero-left">
+      <div class="hero-tag">New Arrivals 2025</div>
+      <h1>PREMIUM <span class="hero-accent">VAPE</span> CULTURE</h1>
+      <p>Discover the finest vaping devices, e-liquids, and accessories. Curated for enthusiasts, built for clouds.</p>
+      <div class="hero-actions">
+        <button class="btn btn-primary" onclick="showPage('shop');document.getElementById('nav-shop').click()">Shop Now →</button>
+        <button class="btn btn-outline" onclick="showPage('deals');document.getElementById('nav-deals').click()">View Deals</button>
+      </div>
+    </div>
+    <div class="hero-stats">
+      <div class="stat-item"><div class="num">500+</div><div class="lbl">Products</div></div>
+      <div class="stat-item"><div class="num">10k+</div><div class="lbl">Customers</div></div>
+      <div class="stat-item"><div class="num">50+</div><div class="lbl">Brands</div></div>
+      <div class="stat-item"><div class="num">4.9</div><div class="lbl">Rating</div></div>
+    </div>
+  </div>
+
+  <div class="promo-banner">
+    <div class="promo-text">
+      <h3>First Order Discount</h3>
+      <p>Get 15% off your first purchase. Use code at checkout.</p>
+    </div>
+    <div class="promo-code" onclick="copyCode('CLOUD15')">CLOUD15</div>
+  </div>
+
+  <div class="section-title">Featured Products</div>
+  <div class="products-grid" id="featured-grid"></div>
+
+  <div class="section-title">Best Sellers</div>
+  <div class="products-grid" id="bestseller-grid"></div>
+</div>
+
+<!-- SHOP PAGE -->
+<div class="page" id="page-shop">
+  <div class="page-header">
+    <h1 class="page-title">The <span>Shop</span></h1>
+    <p class="page-subtitle">Browse our full collection of premium vaping products</p>
+  </div>
+  <div class="filter-bar">
+    <select class="filter-select" title="Sort products" onchange="sortProducts(this.value)">
+      <option value="default">Sort: Featured</option>
+      <option value="price-asc">Price: Low to High</option>
+      <option value="price-desc">Price: High to Low</option>
+      <option value="rating">Top Rated</option>
+      <option value="newest">Newest First</option>
+    </select>
+    <select class="filter-select" title="Filter by category" onchange="filterByCategory(this.value)" id="cat-select">
+      <option value="all">All Categories</option>
+      <option value="devices">Devices</option>
+      <option value="pods">Pod Systems</option>
+      <option value="juice">E-Liquids</option>
+      <option value="coils">Coils</option>
+      <option value="accessories">Accessories</option>
+    </select>
+    <span class="results-count" id="results-count">Showing all products</span>
+  </div>
+  <div class="products-grid" id="shop-grid"></div>
+</div>
+
+<!-- DEALS PAGE -->
+<div class="page" id="page-deals">
+  <div class="page-header">
+    <h1 class="page-title">Hot <span>Deals</span></h1>
+    <p class="page-subtitle">Limited time offers — grab them before they're gone!</p>
+  </div>
+  <div class="products-grid" id="deals-grid"></div>
+</div>
+
+<!-- PRODUCT DETAIL PAGE -->
+<div class="page" id="page-product">
+  <button class="btn btn-outline btn-sm" onclick="showPage('shop')">← Back to Shop</button>
+  <div id="product-detail-content"></div>
+</div>
+
+<!-- WISHLIST PAGE -->
+<div class="page" id="page-wishlist">
+  <div class="page-header">
+    <h1 class="page-title">My <span>Wishlist</span></h1>
+    <p class="page-subtitle">Items you've saved for later</p>
+  </div>
+  <div id="wishlist-grid" class="products-grid"></div>
+</div>
+
+<!-- CART PAGE / CHECKOUT -->
+<div class="page" id="page-checkout">
+  <div class="page-header">
+    <h1 class="page-title">Check<span>out</span></h1>
+    <p class="page-subtitle">Complete your order</p>
+  </div>
+  <div class="checkout-grid">
+    <div>
+      <div class="checkout-card">
+        <h3>Shipping Information</h3>
+        <div class="form-row">
+          <div class="form-group"><label for="co-fname">First Name</label><input type="text" id="co-fname" placeholder="Juan"></div>
+          <div class="form-group"><label for="co-lname">Last Name</label><input type="text" id="co-lname" placeholder="Dela Cruz"></div>
+        </div>
+        <div class="form-group"><label for="co-email">Email</label><input type="email" id="co-email" placeholder="juan@email.com"></div>
+        <div class="form-group"><label for="co-phone">Phone</label><input type="text" id="co-phone" placeholder="+63 9XX XXX XXXX"></div>
+        <div class="form-group"><label for="co-address">Address</label><input type="text" id="co-address" placeholder="Street, Barangay"></div>
+        <div class="form-row">
+          <div class="form-group"><label for="co-city">City</label><input type="text" id="co-city" placeholder="Cagayan de Oro"></div>
+          <div class="form-group"><label for="co-zip">ZIP Code</label><input type="text" id="co-zip" placeholder="9000"></div>
+        </div>
+      </div>
+      <div class="checkout-card">
+        <h3>Payment Method</h3>
+        <div id="payment-options">
+          <p style="color:var(--muted);font-size:13px;">Loading payment methods...</p>
+        </div>
+      </div>
+      <div class="checkout-card">
+        <h3>Promo Code</h3>
+        <div class="promo-apply-row">
+          <input type="text" class="promo-input-field" id="promo-input" title="Promo code" placeholder="Enter promo code">
+          <button class="btn btn-outline" onclick="applyPromo()">Apply</button>
+        </div>
+        <p id="promo-msg"></p>
+      </div>
+    </div>
+    <div>
+      <div class="checkout-card checkout-sticky">
+        <h3>Order Summary</h3>
+        <div id="checkout-summary"></div>
+        <div id="checkout-totals"></div>
+        <button class="btn btn-primary btn-full" onclick="placeOrder()">Place Order →</button>
+        <p class="checkout-secure-note"> Secured & encrypted checkout</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ORDER HISTORY -->
+<div class="page" id="page-history">
+  <div class="page-header">
+    <h1 class="page-title">Order <span>History</span></h1>
+    <p class="page-subtitle">Track and review your past purchases</p>
+  </div>
+  <div id="history-list"></div>
+</div>
+
+<!-- CONTACT / SOCIALS -->
+<div class="page" id="page-contact">
+  <div class="page-header">
+    <h1 class="page-title">Contact <span>Us</span></h1>
+    <p class="page-subtitle">Reach us on your favorite platform</p>
+  </div>
+  <div class="socials-grid">
+    <a class="social-card social-fb" href="https://facebook.com/cloudchasevape" target="_blank" rel="noopener noreferrer">
+      <div class="icon">FB</div>
+      <h3>Facebook</h3>
+      <p>@cloudchasevape</p>
+    </a>
+    <a class="social-card social-ig" href="https://instagram.com/cloudchasevape" target="_blank" rel="noopener noreferrer">
+      <div class="icon">IG</div>
+      <h3>Instagram</h3>
+      <p>@cloudchasevape</p>
+    </a>
+    <a class="social-card social-tt" href="https://tiktok.com/@cloudchasevape" target="_blank" rel="noopener noreferrer">
+      <div class="icon">TT</div>
+      <h3>TikTok</h3>
+      <p>@cloudchasevape</p>
+    </a>
+    <a class="social-card social-wa" href="https://wa.me/639XXXXXXXXX" target="_blank" rel="noopener noreferrer">
+      <div class="icon">WA</div>
+      <h3>WhatsApp</h3>
+      <p>+63 9XX XXX XXXX</p>
+    </a>
+    <a class="social-card social-yt" href="https://youtube.com/@cloudchasevape" target="_blank" rel="noopener noreferrer">
+      <div class="icon">YT</div>
+      <h3>YouTube</h3>
+      <p>CloudChase Vape</p>
+    </a>
+    <a class="social-card social-tw" href="https://x.com/cloudchasevape" target="_blank" rel="noopener noreferrer">
+      <div class="icon">X</div>
+      <h3>X / Twitter</h3>
+      <p>@cloudchasevape</p>
+    </a>
+  </div>
+  <div class="contact-form">
+    <h3 class="contact-form-title">Send us a Message</h3>
+    <p class="contact-form-subtitle">We usually respond within 24 hours</p>
+    <div class="form-row">
+      <div class="form-group"><label for="contact-name">Your Name</label><input type="text" id="contact-name" placeholder="Juan Dela Cruz"></div>
+      <div class="form-group"><label for="contact-email">Email</label><input type="email" id="contact-email" placeholder="juan@email.com"></div>
+    </div>
+    <div class="form-group"><label for="contact-subject">Subject</label>
+      <select id="contact-subject" title="Message subject">
+        <option>Order Inquiry</option>
+        <option>Product Question</option>
+        <option>Returns &amp; Refunds</option>
+        <option>Wholesale</option>
+        <option>Other</option>
+      </select>
+    </div>
+    <div class="form-group"><label for="contact-msg">Message</label><textarea id="contact-msg" placeholder="How can we help you?"></textarea></div>
+    <button class="btn btn-primary" onclick="sendContactForm()">Send Message →</button>
+  </div>
+</div>
+
+<!-- SETTINGS PAGE -->
+<div class="page" id="page-settings">
+  <div class="page-header">
+    <h1 class="page-title"><span>Settings</span></h1>
+    <p class="page-subtitle">Manage your account preferences</p>
+  </div>
+  <div class="settings-grid">
+    <div class="settings-nav">
+      <div class="settings-nav-item active" onclick="showSettingsPanel('profile',this)">👤 Profile</div>
+      <div class="settings-nav-item" onclick="showSettingsPanel('notifications',this)">🔔 Notifications</div>
+      <div class="settings-nav-item" onclick="showSettingsPanel('privacy',this)">🔒 Privacy</div>
+      <div class="settings-nav-item" onclick="showSettingsPanel('addresses',this)">📍 Addresses</div>
+      <div class="settings-nav-item" onclick="showSettingsPanel('danger',this)">⚠️ Account</div>
+    </div>
+    <div>
+      <div class="settings-panel active" id="settings-profile">
+        <div class="settings-section">
+          <h3>Profile Information</h3>
+          <p>Update your personal details</p>
+          <div class="form-row">
+            <div class="form-group"><label for="s-fname">First Name</label><input type="text" id="s-fname" placeholder="Juan"></div>
+            <div class="form-group"><label for="s-lname">Last Name</label><input type="text" id="s-lname" placeholder="Dela Cruz"></div>
+          </div>
+          <div class="form-group"><label for="s-email">Email</label><input type="email" id="s-email" placeholder="juan@email.com"></div>
+          <div class="form-group"><label for="s-phone">Phone</label><input type="text" id="s-phone" placeholder="+63 9XX XXX XXXX"></div>
+          <div class="form-group"><label for="s-bday">Birthday</label><input type="date" id="s-bday"></div>
+          <button class="btn btn-primary" onclick="saveProfile()">Save Changes</button>
+        </div>
+        <div class="settings-section">
+          <h3>Change Password</h3>
+          <p>Keep your account secure</p>
+          <div class="form-group"><label for="s-oldpw">Current Password</label><input type="password" id="s-oldpw" placeholder="••••••••"></div>
+          <div class="form-group"><label for="s-newpw">New Password</label><input type="password" id="s-newpw" placeholder="••••••••"></div>
+          <div class="form-group"><label for="s-conpw">Confirm Password</label><input type="password" id="s-conpw" placeholder="••••••••"></div>
+          <button class="btn btn-primary" onclick="changePassword()">Update Password</button>
+        </div>
+      </div>
+      <div class="settings-panel" id="settings-notifications">
+        <div class="settings-section">
+          <h3>Notification Preferences</h3>
+          <p>Control what notifications you receive</p>
+          <div class="toggle-row">
+            <div class="toggle-info"><div class="tl">Order Updates</div><div class="ts">Get notified when your order status changes</div></div>
+            <label class="toggle"><input type="checkbox" checked aria-label="Order Updates"><span class="slider-toggle"></span></label>
+          </div>
+          <div class="toggle-row">
+            <div class="toggle-info"><div class="tl">Promotions &amp; Deals</div><div class="ts">Exclusive discounts and flash sales</div></div>
+            <label class="toggle"><input type="checkbox" checked aria-label="Promotions &amp; Deals"><span class="slider-toggle"></span></label>
+          </div>
+          <div class="toggle-row">
+            <div class="toggle-info"><div class="tl">New Arrivals</div><div class="ts">Be first to know about new products</div></div>
+            <label class="toggle"><input type="checkbox" aria-label="New Arrivals"><span class="slider-toggle"></span></label>
+          </div>
+          <div class="toggle-row">
+            <div class="toggle-info"><div class="tl">Newsletter</div><div class="ts">Weekly vape tips and reviews</div></div>
+            <label class="toggle"><input type="checkbox" aria-label="Newsletter"><span class="slider-toggle"></span></label>
+          </div>
+        </div>
+      </div>
+      <div class="settings-panel" id="settings-privacy">
+        <div class="settings-section">
+          <h3>Privacy Settings</h3>
+          <p>Control your data and privacy</p>
+          <div class="toggle-row">
+            <div class="toggle-info"><div class="tl">Public Profile</div><div class="ts">Allow others to see your profile</div></div>
+            <label class="toggle"><input type="checkbox" aria-label="Public Profile"><span class="slider-toggle"></span></label>
+          </div>
+          <div class="toggle-row">
+            <div class="toggle-info"><div class="tl">Personalized Ads</div><div class="ts">Show relevant ads based on your browsing</div></div>
+            <label class="toggle"><input type="checkbox" checked aria-label="Personalized Ads"><span class="slider-toggle"></span></label>
+          </div>
+          <div class="toggle-row">
+            <div class="toggle-info"><div class="tl">Analytics Cookies</div><div class="ts">Help us improve our website</div></div>
+            <label class="toggle"><input type="checkbox" checked aria-label="Analytics Cookies"><span class="slider-toggle"></span></label>
+          </div>
+        </div>
+      </div>
+      <div class="settings-panel" id="settings-addresses">
+        <div class="settings-section">
+          <h3>Saved Addresses</h3>
+          <p>Manage your delivery addresses</p>
+          <div id="saved-addresses"></div>
+          <div class="form-group"><label for="s-addr">Full Address</label><input type="text" id="s-addr" placeholder="Street, Barangay, City, Province"></div>
+          <div class="form-row">
+            <div class="form-group"><label for="s-addr-city">City</label><input type="text" id="s-addr-city" placeholder="Cagayan de Oro"></div>
+            <div class="form-group"><label for="s-addr-zip">ZIP</label><input type="text" id="s-addr-zip" placeholder="9000"></div>
+          </div>
+          <button class="btn btn-primary" onclick="saveAddress()">Save Address</button>
+        </div>
+      </div>
+      <div class="settings-panel" id="settings-danger">
+        <div class="settings-section">
+          <h3>Danger Zone</h3>
+          <p>These actions are irreversible. Proceed with caution.</p>
+          <div class="danger-actions">
+            <button class="btn btn-danger" onclick="clearHistory()">Clear Order History</button>
+            <button class="btn btn-danger" onclick="deleteAccount()">Delete Account</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</main>
+
+<!-- FOOTER -->
+<footer id="footer">
+  <div class="footer-grid">
+    <div class="footer-brand">
+      <h2>CLOUDCHASE</h2>
+      <p>Your premium destination for vaping products. Quality devices, authentic e-liquids, and unmatched customer service.</p>
+      <p class="footer-disclaimer">[!] For adults 18+ only. Vaping products contain nicotine.</p>
+    </div>
+    <div class="footer-col">
+      <h4>Shop</h4>
+      <a onclick="showPage('shop')">All Products</a>
+      <a onclick="filterCategory('devices')">Devices</a>
+      <a onclick="filterCategory('juice')">E-Liquids</a>
+      <a onclick="filterCategory('pods')">Pod Systems</a>
+      <a onclick="showPage('deals')">Hot Deals</a>
+    </div>
+    <div class="footer-col">
+      <h4>Support</h4>
+      <a onclick="showPage('contact')">Contact Us</a>
+      <a onclick="toast('Coming soon!')">FAQ</a>
+      <a onclick="toast('Coming soon!')">Shipping Policy</a>
+      <a onclick="toast('Coming soon!')">Returns</a>
+      <a onclick="toast('Coming soon!')">Track Order</a>
+    </div>
+    <div class="footer-col">
+      <h4>Account</h4>
+      <a onclick="showModal('login')">Login</a>
+      <a onclick="showModal('register')">Register</a>
+      <a onclick="requireLogin(()=>showPage('history'))">Order History</a>
+      <a onclick="showPage('wishlist')">Wishlist</a>
+      <a onclick="showPage('settings')">Settings</a>
+    </div>
+  </div>
+  <div class="footer-bottom">© 2025 CloudChase Vape Shop — Cagayan de Oro, Philippines. All rights reserved.</div>
+</footer>
+
+<!-- LOGIN MODAL -->
+<div class="modal-overlay" id="modal-login">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('login')"></button>
+    <h2>Welcome Back</h2>
+    <p class="subtitle">Login to your CloudChase account</p>
+    <div class="form-group">
+      <label for="login-email">Email Address</label>
+      <input type="email" id="login-email" placeholder="juan@email.com">
+    </div>
+    <div class="form-group">
+      <label for="login-pw">Password</label>
+      <input type="password" id="login-pw" placeholder="••••••••">
+    </div>
+    <div id="login-error" class="form-error"></div>
+    <button class="btn btn-primary btn-full" onclick="login()">Login →</button>
+    <p class="modal-footer-text">
+      Don't have an account? <a onclick="closeModal('login');showModal('register')" class="modal-link">Sign Up</a>
+    </p>
+    <p class="modal-demo-note">Demo: use any email + "password123"</p>
+  </div>
+</div>
+
+<!-- REGISTER MODAL -->
+<div class="modal-overlay" id="modal-register">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('register')"></button>
+    <h2>Create Account</h2>
+    <p class="subtitle">Join the CloudChase community</p>
+    <div class="form-row">
+      <div class="form-group"><label for="reg-fname">First Name</label><input type="text" id="reg-fname" placeholder="Juan"></div>
+      <div class="form-group"><label for="reg-lname">Last Name</label><input type="text" id="reg-lname" placeholder="Dela Cruz"></div>
+    </div>
+    <div class="form-group"><label for="reg-email">Email Address</label><input type="email" id="reg-email" placeholder="juan@email.com"></div>
+    <div class="form-group"><label for="reg-pw">Password</label><input type="password" id="reg-pw" placeholder="Min. 8 characters"></div>
+    <div class="form-group"><label for="reg-cpw">Confirm Password</label><input type="password" id="reg-cpw" placeholder="Repeat password"></div>
+    <div class="form-group">
+      <label class="checkbox-label">
+        <input type="checkbox" id="reg-age" class="age-checkbox">
+        <span class="checkbox-text">I confirm I am 18 years of age or older and agree to the Terms of Service</span>
+      </label>
+    </div>
+    <div id="reg-error" class="form-error"></div>
+    <button class="btn btn-primary btn-full" onclick="register()">Create Account →</button>
+    <p class="modal-footer-text">
+      Already have an account? <a onclick="closeModal('register');showModal('login')" class="modal-link">Login</a>
+    </p>
+  </div>
+</div>
+
+<!-- ORDER SUCCESS MODAL -->
+<div class="modal-overlay" id="modal-success">
+  <div class="modal modal-centered">
+    <div class="success-icon">✅</div>
+    <h2 class="success-heading">Order Placed!</h2>
+    <p class="subtitle">Thank you for your purchase! Your order is being processed.</p>
+    <div class="success-order-box">
+      <div class="success-order-label mono">ORDER ID</div>
+      <div class="success-order-id mono" id="success-order-id">#CC-000000</div>
+    </div>
+    <p class="success-note">You'll receive a confirmation soon. Track your order in <strong>Order History</strong>.</p>
+    <div class="success-modal-actions">
+      <button class="btn btn-outline btn-full" onclick="closeModal('success');showPage('home')">Back to Home</button>
+      <button class="btn btn-primary btn-full" onclick="closeModal('success');showPage('history')">View Orders</button>
+    </div>
+  </div>
+</div>
+<!--  Review Modal  -->
+<div class="modal-overlay" id="modal-review">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('review')"></button>
+    <h2 class="modal-title">Leave a Review</h2>
+    <p class="modal-subtitle" id="review-product-name" style="color:var(--accent);font-weight:600;margin-bottom:16px;"></p>
+    <div class="review-stars" id="review-stars">
+      <span class="star" data-v="1" onclick="setReviewStar(1)"></span>
+      <span class="star" data-v="2" onclick="setReviewStar(2)"></span>
+      <span class="star" data-v="3" onclick="setReviewStar(3)"></span>
+      <span class="star" data-v="4" onclick="setReviewStar(4)"></span>
+      <span class="star" data-v="5" onclick="setReviewStar(5)"></span>
+    </div>
+    <p id="review-star-label" style="text-align:center;font-size:13px;color:var(--muted);margin-bottom:12px;">Tap a star to rate</p>
+    <textarea id="review-text" class="input" rows="4" placeholder="Share your experience with this product..." style="resize:vertical;width:100%;box-sizing:border-box;"></textarea>
+    <p id="review-error" class="form-error" style="display:none;"></p>
+    <button class="btn btn-primary btn-full" onclick="submitReview()" style="margin-top:12px;">Submit Review</button>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="supabase-config.js"></script>
+<script src="vape-shop.js"></script>
+</body>
+</html>

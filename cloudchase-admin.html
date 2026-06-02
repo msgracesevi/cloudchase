@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CloudChase Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="cloudchase-admin.css">
+</head>
+<body>
+
+<!-- LOGIN SCREEN -->
+<div id="login-screen">
+ <div class="login-box">
+ <div class="login-logo">CLOUD<span>CHASE</span></div>
+ <div class="login-tagline">ADMIN PANEL · ROLE ACCESS</div>
+ <div class="login-role-grid">
+ <button class="role-btn" data-role="owner" onclick="selectLoginRole('owner',this)">
+ 
+ <div class="role-btn-label">Owner</div>
+ <div class="role-btn-desc">Full access</div>
+ </button>
+ <button class="role-btn" data-role="manager" onclick="selectLoginRole('manager',this)">
+ 
+ <div class="role-btn-label">Manager</div>
+ <div class="role-btn-desc">Products & Stocks</div>
+ </button>
+ <button class="role-btn" data-role="staff" onclick="selectLoginRole('staff',this)">
+ 
+ <div class="role-btn-label">Staff</div>
+ <div class="role-btn-desc">View only</div>
+ </button>
+ </div>
+ <div class="login-creds-section" id="login-creds-section">
+ <div class="login-pin-label" id="login-pin-label">Sign in</div>
+ <div class="login-creds-fields">
+ <div class="creds-field-wrap">
+ <span class="creds-field-icon"></span>
+ <input class="creds-input" type="text" id="login-username" placeholder="Username" autocomplete="username" onkeydown="if(event.key==='Enter')document.getElementById('login-password').focus()">
+ </div>
+ <div class="creds-field-wrap">
+ <span class="creds-field-icon"></span>
+ <input class="creds-input" type="password" id="login-password" placeholder="Password" autocomplete="current-password" onkeydown="if(event.key==='Enter')loginSubmit()">
+ <button type="button" class="creds-toggle" onclick="toggleLoginPwd()" id="login-pwd-toggle">SHOW</button>
+ </div>
+ <button class="login-submit-btn" onclick="loginSubmit()">LOGIN ↵</button>
+ </div>
+ <div class="login-pin-hint" id="login-pin-hint"></div>
+ </div>
+ </div>
+</div>
+
+<!-- ROLE SWITCHER MODAL -->
+<div class="modal-overlay" id="role-switch-modal">
+ <div class="modal modal-narrow">
+ <button class="modal-close" onclick="closeRoleSwitchModal()"></button>
+ <div class="modal-title">Switch Role</div>
+ <div class="modal-subtitle">Select a role and enter credentials to switch access level.</div>
+ <div class="login-role-grid" style="margin:16px 0">
+ <button class="role-btn" data-role="owner" onclick="selectSwitchRole('owner',this)">
+ 
+ <div class="role-btn-label">Owner</div>
+ </button>
+ <button class="role-btn" data-role="manager" onclick="selectSwitchRole('manager',this)">
+ 
+ <div class="role-btn-label">Manager</div>
+ </button>
+ <button class="role-btn" data-role="staff" onclick="selectSwitchRole('staff',this)">
+ 
+ <div class="role-btn-label">Staff</div>
+ </button>
+ </div>
+ <div id="switch-creds-section">
+ <div class="login-creds-fields" style="margin-bottom:8px">
+ <div class="creds-field-wrap">
+ <span class="creds-field-icon"></span>
+ <input class="creds-input" type="text" id="switch-username" placeholder="Username" autocomplete="username" onkeydown="if(event.key==='Enter')document.getElementById('switch-password').focus()">
+ </div>
+ <div class="creds-field-wrap">
+ <span class="creds-field-icon"></span>
+ <input class="creds-input" type="password" id="switch-password" placeholder="Password" autocomplete="current-password" onkeydown="if(event.key==='Enter')switchCredsSubmit()">
+ <button type="button" class="creds-toggle" onclick="toggleSwitchPwd()" id="switch-pwd-toggle">SHOW</button>
+ </div>
+ <button class="login-submit-btn" onclick="switchCredsSubmit()">SWITCH ROLE ↵</button>
+ </div>
+ <div class="login-pin-hint" id="switch-pin-hint"></div>
+ </div>
+ </div>
+</div>
+
+<!-- SIDEBAR -->
+<aside id="sidebar">
+ <div class="sidebar-logo">
+ <div class="brand">CLOUD<span>CHASE</span></div>
+ <div class="tag">ADMIN PANEL v1.0</div>
+ </div>
+
+ <div class="nav-section">
+ <div class="nav-label">Overview</div>
+ <div class="nav-item active" onclick="showPage('dashboard',this)">
+  Dashboard
+ </div>
+ </div>
+
+ <div class="nav-section">
+ <div class="nav-label">Operations</div>
+ <div class="nav-item" onclick="showPage('orders',this)" id="nav-orders">
+  Orders
+ <span class="nav-badge" id="pending-badge">3</span>
+ </div>
+ <div class="nav-item" onclick="showPage('products',this)">
+  Products
+ </div>
+ <div class="nav-item" onclick="showPage('inventory',this)">
+  Inventory
+ <span class="nav-badge warn" id="lowstock-badge">2</span>
+ </div>
+ <div class="nav-item" onclick="showPage('customers',this)">
+  Customers
+ </div>
+ <div class="nav-item" onclick="showPage('riders',this)" id="nav-riders">
+  Riders
+ <span class="nav-badge" id="riders-badge" style="display:none">0</span>
+ </div>
+ <div class="nav-item" onclick="showPage('reviews',this)" id="nav-reviews">
+  Reviews
+ <span class="nav-badge info" id="reviews-badge" style="display:none">0</span>
+ </div>
+ </div>
+
+ <div class="nav-section">
+ <div class="nav-label">Store</div>
+ <div class="nav-item" onclick="showPage('promotions',this)">
+  Promotions
+ </div>
+ <div class="nav-item" onclick="showPage('reports',this)">
+  Reports
+ </div>
+ <div class="nav-item" onclick="showPage('payments',this)" id="nav-payments">
+  Payments
+ </div>
+ <div class="nav-item" onclick="showPage('settings',this)">
+  Settings
+ </div>
+ </div>
+
+ <div class="sidebar-bottom">
+ <div class="admin-chip" onclick="openRoleSwitchModal()" title="Switch role" style="cursor:pointer">
+ <div class="admin-avatar" id="sidebar-avatar">A</div>
+ <div>
+ <div class="admin-name" id="sidebar-name">Admin</div>
+ <div class="admin-role" id="sidebar-role">OWNER</div>
+ </div>
+ <div class="role-switch-icon">⇄</div>
+ </div>
+ <button class="btn btn-danger btn-sm" onclick="signOut()" style="width:100%;margin-top:8px;font-size:11px;letter-spacing:0.08em">SIGN OUT</button>
+ </div>
+</aside>
+
+<!-- MAIN -->
+<div id="main">
+ <div id="sync-status-bar"><span class="sync-dot"></span> LIVE SYNC ON · Loading orders...</div>
+ <div id="topbar">
+ <span class="topbar-title" id="topbar-title">DASHBOARD</span>
+ <span class="topbar-subtitle" id="topbar-sub">Welcome back, Admin</span>
+ <div class="topbar-actions">
+ <div class="status-dot"></div>
+ <span class="status-label">STORE LIVE</span>
+
+ </div>
+ </div>
+
+ <!-- DASHBOARD PAGE -->
+ <div class="page active" id="page-dashboard">
+ <div class="stats-row">
+ <div class="stat-card green">
+ <div class="stat-label">Today's Revenue</div>
+ <div class="stat-value green" id="dash-today-revenue">₱—</div>
+ <div class="stat-change" id="dash-revenue-change">Loading...</div>
+ </div>
+ <div class="stat-card yellow">
+ <div class="stat-label">Pending Orders</div>
+ <div class="stat-value yellow" id="dash-pending">—</div>
+ <div class="stat-change">Needs attention</div>
+ </div>
+ <div class="stat-card blue">
+ <div class="stat-label">Total Orders</div>
+ <div class="stat-value blue" id="dash-total-orders">—</div>
+ <div class="stat-change" id="dash-total-orders-change">Loading...</div>
+ </div>
+ <div class="stat-card red">
+ <div class="stat-label">Low Stock Items</div>
+ <div class="stat-value red" id="dash-lowstock">—</div>
+ <div class="stat-change">Action required</div>
+ </div>
+ </div>
+
+ <div class="grid-3">
+ <!-- Recent Orders -->
+ <div class="card">
+ <div class="section-header">
+ <div class="section-title">RECENT ORDERS</div>
+ <span class="section-action" onclick="showPage('orders',document.querySelector('[onclick*=orders]'))">View All →</span>
+ </div>
+ <div class="table-wrap">
+ <table>
+ <thead>
+ <tr>
+ <th>Order ID</th>
+ <th>Customer</th>
+ <th>Amount</th>
+ <th>Status</th>
+ </tr>
+ </thead>
+ <tbody id="dash-orders-tbody"></tbody>
+ </table>
+ </div>
+ </div>
+
+ <!-- Revenue + Top Products -->
+ <div class="flex-col-gap-14">
+ <div class="card">
+ <div class="section-header">
+ <div class="section-title">REVENUE (7 DAYS)</div>
+ </div>
+ <div class="rev-chart" id="rev-chart"></div>
+ </div>
+ <div class="card">
+ <div class="section-header">
+ <div class="section-title">TOP CATEGORIES</div>
+ </div>
+ <div class="bar-chart" id="dash-categories-chart">
+ <div style="color:var(--text3);font-size:12px;font-family:var(--mono)">Loading...</div>
+ </div>
+ </div>
+ </div>
+ </div>
+
+ <!-- Low Stock Alert -->
+ <div class="card card-warn-border">
+ <div class="section-header">
+ <div class="section-title-warn"> LOW STOCK ALERTS</div>
+ <span class="section-action" onclick="showPage('inventory',document.querySelector('[onclick*=inventory]'))">Manage →</span>
+ </div>
+ <div class="table-wrap">
+ <table>
+ <thead><tr><th>Product</th><th>SKU</th><th>Stock</th><th>Action</th></tr></thead>
+ <tbody id="dash-lowstock-tbody">
+ <tr><td colspan="4" style="color:var(--text3);font-family:var(--mono);font-size:12px;padding:16px">Loading...</td></tr>
+ </tbody>
+ </table>
+ </div>
+ </div>
+ </div>
+
+ <!-- ORDERS PAGE -->
+ <div class="page" id="page-orders">
+ <div class="filter-bar">
+ <input type="text" class="search-input" id="orders-search-input" placeholder=" Search order ID or customer..." oninput="filterOrders(this.value)" aria-label="Search orders">
+ <select class="filter-select" title="Filter by status" onchange="filterOrdersByStatus(this.value)">
+ <option value="all">All Status</option>
+ <option value="pending">Pending</option>
+ <option value="processing">Processing</option>
+ <option value="shipped">Shipped</option>
+ <option value="delivered">Delivered</option>
+ <option value="cancelled">Cancelled</option>
+ </select>
+ <select class="filter-select" title="Filter by payment" id="orders-payment-filter" onchange="filterOrdersByPayment(this.value)">
+ <option value="all">All Payments</option>
+ <option value="cod">COD</option>
+ <option value="gcash">GCash</option>
+ <option value="card">Card</option>
+ <option value="maya">Maya</option>
+ </select>
+ <button class="btn btn-ghost btn-sm" onclick="showToast('Exported to CSV!')">↓ Export</button>
+ </div>
+ <div class="card">
+ <div class="table-wrap">
+ <table>
+ <thead>
+ <tr>
+ <th>Order ID</th>
+ <th>Customer</th>
+ <th>Date</th>
+ <th>Items</th>
+ <th>Total</th>
+ <th>Payment</th>
+ <th>Status</th>
+ <th>Rider</th>
+ <th>Actions</th>
+ </tr>
+ </thead>
+ <tbody id="orders-tbody"></tbody>
+ </table>
+ </div>
+ </div>
+ </div>
+
+ <!-- PRODUCTS PAGE -->
+ <div class="page" id="page-products">
+ <div class="filter-bar">
+ <input type="text" class="search-input" placeholder=" Search products..." aria-label="Search products" id="product-search" oninput="filterProducts()">
+ <select class="filter-select" title="Filter by category" id="product-cat-filter" onchange="filterProducts()">
+ <option value="all">All Categories</option>
+ <option value="Devices">Devices</option>
+ <option value="Pod Systems">Pod Systems</option>
+ <option value="E-Liquids">E-Liquids</option>
+ <option value="Coils">Coils</option>
+ <option value="Accessories">Accessories</option>
+ </select>
+ <button class="btn btn-primary btn-sm" id="btn-add-product" onclick="rbacAction('manage_products', openAddProduct)">+ Add Product</button>
+ </div>
+ <div class="card">
+ <div class="table-wrap">
+ <table>
+ <thead>
+ <tr>
+ <th>Product</th>
+ <th>Category</th>
+ <th>Price</th>
+ <th>Stock</th>
+ <th>Status</th>
+ <th>Actions</th>
+ </tr>
+ </thead>
+ <tbody id="products-tbody"></tbody>
+ </table>
+ </div>
+ </div>
+ </div>
+
+ <!-- INVENTORY PAGE -->
+ <div class="page" id="page-inventory">
+ <div class="mini-stats">
+ <div class="mini-stat"><div class="val accent" id="inv-stat-total">0</div><div class="lbl">Total Products</div></div>
+ <div class="mini-stat"><div class="val warn" id="inv-stat-low">0</div><div class="lbl">Low Stock</div></div>
+ <div class="mini-stat"><div class="val danger" id="inv-stat-out">0</div><div class="lbl">Out of Stock</div></div>
+ </div>
+ <div class="filter-bar">
+ <input type="text" class="search-input" placeholder=" Search inventory..." aria-label="Search inventory" id="inventory-search" oninput="filterInventory()">
+ <select class="filter-select" title="Filter stock level" id="inventory-stock-filter" onchange="filterInventory()">
+ <option value="all">All Stock Levels</option>
+ <option value="low">Low Stock (&lt;5)</option>
+ <option value="in">In Stock</option>
+ <option value="out">Out of Stock</option>
+ </select>
+ </div>
+ <div class="card">
+ <div class="table-wrap">
+ <table>
+ <thead>
+ <tr><th>Product</th><th>SKU</th><th>Category</th><th>Stock</th><th>Status</th><th>Adjust</th></tr>
+ </thead>
+ <tbody id="inventory-tbody"></tbody>
+ </table>
+ </div>
+ </div>
+ </div>
+
+ <!-- CUSTOMERS PAGE -->
+ <div class="page" id="page-customers">
+ <div class="filter-bar">
+ <input type="text" class="search-input" placeholder=" Search customers..." aria-label="Search customers" oninput="filterCustomers(this.value)">
+ <select class="filter-select" title="Filter by account status" onchange="filterCustomersByStatus(this.value)">
+ <option value="all">All Customers</option>
+ <option value="active">Active</option>
+ <option value="restricted">Restricted</option>
+ <option value="blocked">Blocked</option>
+ </select>
+ <button class="btn btn-ghost btn-sm" onclick="showToast('Exported to CSV!')">↓ Export</button>
+ </div>
+ <div class="card">
+ <div class="table-wrap">
+ <table>
+ <thead>
+ <tr><th>Customer</th><th>Email</th><th>Phone</th><th>Orders</th><th>Total Spent</th><th>Joined</th><th>Status</th><th>Actions</th></tr>
+ </thead>
+ <tbody id="customers-tbody"></tbody>
+ </table>
+ </div>
+ </div>
+ </div>
+
+ <!-- RIDERS PAGE -->
+ <div class="page" id="page-riders">
+ <div class="mini-stats" id="rider-stats-row">
+ <div class="mini-stat"><div class="val accent">0</div><div class="lbl">Online Riders</div></div>
+ <div class="mini-stat"><div class="val warn">0</div><div class="lbl">On Delivery</div></div>
+ <div class="mini-stat"><div class="val">0</div><div class="lbl">Available</div></div>
+ <div class="mini-stat"><div class="val">0</div><div class="lbl">Offline</div></div>
+ </div>
+ <div class="card">
+ <div class="section-header">
+ <div class="section-title">LIVE RIDER TRACKING</div>
+ <div style="display:flex;gap:8px">
+ <button class="btn btn-ghost btn-sm" onclick="renderRiders()">↻ Refresh</button>
+ <button class="btn btn-primary btn-sm" id="btn-add-rider" onclick="rbacAction('manage_all', openAddRider)">+ Add Rider</button>
+ </div>
+ </div>
+ <div class="table-wrap">
+ <table>
+ <thead>
+ <tr>
+ <th>Rider</th>
+ <th>Phone</th>
+ <th>Status</th>
+ <th>Current Order</th>
+ <th>Delivery Step</th>
+ <th>Last Seen</th>
+ <th>Actions</th>
+ </tr>
+ </thead>
+ <tbody id="riders-tbody"></tbody>
+ </table>
+ </div>
+ </div>
+ </div>
+
+ <!-- REVIEWS PAGE -->
+ <div class="page" id="page-reviews">
+ <!-- Summary stats -->
+ <div class="reviews-summary-bar" id="reviews-summary-bar">
+ <div class="rev-summary-card">
+ <div class="rev-summary-score" id="rev-avg-score">—</div>
+ <div class="rev-stars-large" id="rev-avg-stars"></div>
+ <div class="rev-summary-label">Overall Rating</div>
+ </div>
+ <div class="rev-distribution" id="rev-distribution"></div>
+ <div class="rev-summary-card">
+ <div class="rev-summary-score accent" id="rev-total-count">0</div>
+ <div class="rev-summary-label">Total Reviews</div>
+ </div>
+ <div class="rev-summary-card">
+ <div class="rev-summary-score warn" id="rev-pending-count">0</div>
+ <div class="rev-summary-label">Reviews</div>
+ </div>
+ </div>
+
+ <!-- Filters -->
+ <div class="filter-bar">
+ <input type="text" class="search-input" placeholder=" Search reviews..." aria-label="Search reviews" oninput="filterReviews(this.value)">
+ <select class="filter-select" title="Filter by rating" onchange="filterReviewsByRating(this.value)">
+ <option value="all">All Ratings</option>
+ <option value="5"> 5 Stars</option>
+ <option value="4"> 4 Stars</option>
+ <option value="3"> 3 Stars</option>
+ <option value="2"> 2 Stars</option>
+ <option value="1"> 1 Star</option>
+ </select>
+ <select class="filter-select" title="Sort reviews" onchange="sortReviews(this.value)">
+ <option value="newest">Newest First</option>
+ <option value="oldest">Oldest First</option>
+ <option value="highest">Highest Rating</option>
+ <option value="lowest">Lowest Rating</option>
+ </select>
+ </div>
+
+ <!-- Reviews list -->
+ <div id="reviews-list"></div>
+ </div>
+
+ <!-- REVIEW DETAIL MODAL -->
+ <div class="modal-overlay" id="review-detail-modal">
+ <div class="modal modal-narrow">
+ <button class="modal-close" onclick="closeReviewDetailModal()"></button>
+ <div class="modal-title">Review Details</div>
+ <div class="modal-subtitle">Customer review · read-only</div>
+ <div id="review-detail-body"></div>
+ <div class="modal-footer">
+ <button class="btn btn-primary" onclick="closeReviewDetailModal()">Close</button>
+ </div>
+ </div>
+ </div>
+ <div class="page" id="page-promotions">
+ <!-- Add Promo Form (owner only) -->
+ <div class="card" id="promo-add-card">
+ <div class="section-title section-title-spaced">NEW PROMO CODE</div>
+ <div class="form-row">
+ <div class="form-group"><label for="promo-code">Code</label><input class="form-input" id="promo-code" placeholder="e.g. SAVE20" style="text-transform:uppercase"></div>
+ <div class="form-group"><label for="promo-pct">Discount %</label><input class="form-input" id="promo-pct" type="number" min="1" max="100" placeholder="e.g. 20"></div>
+ <div class="form-group"><label for="promo-desc">Description</label><input class="form-input" id="promo-desc" placeholder="e.g. 20% off all orders"></div>
+ </div>
+ <button class="btn btn-primary btn-sm" id="btn-add-promo" onclick="rbacAction('manage_all', addPromo)">+ Add Promo Code</button>
+ </div>
+ <!-- Promo List -->
+ <div class="card">
+ <div class="table-wrap">
+ <table>
+ <thead>
+ <tr><th>Code</th><th>Description</th><th>Discount</th><th>Status</th><th>Actions</th></tr>
+ </thead>
+ <tbody id="promos-tbody">
+ <tr><td colspan="5" style="color:var(--text3);font-family:var(--mono);font-size:12px;padding:20px">Loading...</td></tr>
+ </tbody>
+ </table>
+ </div>
+ </div>
+ </div>
+
+ <!-- REPORTS PAGE -->
+ <div class="page" id="page-reports">
+
+   <!-- Period Tabs -->
+   <div class="report-tabs">
+     <button class="report-tab active" onclick="setReportPeriod('monthly', this)">Monthly</button>
+     <button class="report-tab" onclick="setReportPeriod('yearly', this)">Yearly</button>
+   </div>
+
+   <!-- Period Selector -->
+   <div class="report-period-row">
+     <div id="report-period-selector">
+       <!-- Populated by JS -->
+     </div>
+     <div class="report-period-nav">
+       <button class="btn btn-ghost btn-sm" onclick="shiftReportPeriod(-1)">&#8592; Prev</button>
+       <span id="report-period-label" class="report-period-label">—</span>
+       <button class="btn btn-ghost btn-sm" onclick="shiftReportPeriod(1)">Next &#8594;</button>
+     </div>
+   </div>
+
+   <!-- Summary Stats -->
+   <div class="stats-row" id="report-stats-row">
+     <div class="stat-card green">
+       <div class="stat-label">Total Revenue</div>
+       <div class="stat-value green" id="rpt-revenue">—</div>
+       <div class="stat-change" id="rpt-revenue-sub">Loading...</div>
+     </div>
+     <div class="stat-card blue">
+       <div class="stat-label">Total Orders</div>
+       <div class="stat-value blue" id="rpt-orders">—</div>
+       <div class="stat-change" id="rpt-orders-sub">Loading...</div>
+     </div>
+     <div class="stat-card yellow">
+       <div class="stat-label">Avg. Order Value</div>
+       <div class="stat-value yellow" id="rpt-aov">—</div>
+       <div class="stat-change">Per order</div>
+     </div>
+     <div class="stat-card red">
+       <div class="stat-label">Cancelled Orders</div>
+       <div class="stat-value red" id="rpt-cancelled">—</div>
+       <div class="stat-change" id="rpt-cancelled-sub">Loading...</div>
+     </div>
+   </div>
+
+   <!-- Revenue Chart -->
+   <div class="card" style="margin-bottom:14px">
+     <div class="section-header">
+       <div class="section-title" id="rpt-chart-title">REVENUE CHART</div>
+     </div>
+     <div class="rev-chart-wrap">
+       <div id="report-rev-chart" class="rev-chart">
+         <div style="color:var(--text3);font-size:12px;font-family:var(--mono);padding:20px 0">Loading chart...</div>
+       </div>
+     </div>
+   </div>
+
+   <!-- Category + Payment -->
+   <div class="grid-2">
+     <div class="card">
+       <div class="section-header"><div class="section-title">REVENUE BY CATEGORY</div></div>
+       <div class="bar-chart" id="rpt-category-chart">
+         <div style="color:var(--text3);font-size:12px;font-family:var(--mono)">Loading...</div>
+       </div>
+     </div>
+     <div class="card">
+       <div class="section-header"><div class="section-title">PAYMENT METHODS</div></div>
+       <div class="bar-chart" id="rpt-payment-chart">
+         <div style="color:var(--text3);font-size:12px;font-family:var(--mono)">Loading...</div>
+       </div>
+     </div>
+   </div>
+
+   <!-- Top Products -->
+   <div class="card" style="margin-top:14px">
+     <div class="section-header"><div class="section-title">TOP PRODUCTS</div></div>
+     <div class="table-wrap">
+       <table>
+         <thead><tr><th>#</th><th>Product</th><th>Unit Price</th><th>Qty Sold</th><th>Revenue</th></tr></thead>
+         <tbody id="rpt-top-products">
+           <tr><td colspan="4" style="color:var(--text3);font-family:var(--mono);font-size:12px">Loading...</td></tr>
+         </tbody>
+       </table>
+     </div>
+   </div>
+
+ </div>
+
+ <!-- PAYMENTS PAGE -->
+ <div class="page" id="page-payments">
+
+ <!-- Summary stats -->
+ <div class="mini-stats" id="payment-mini-stats">
+   <div class="mini-stat"><div class="val accent" id="pm-stat-total">—</div><div class="lbl">Total Collected</div></div>
+   <div class="mini-stat"><div class="val" id="pm-stat-count">—</div><div class="lbl">Transactions</div></div>
+   <div class="mini-stat"><div class="val warn" id="pm-stat-pending">—</div><div class="lbl">Pending</div></div>
+   <div class="mini-stat"><div class="val danger" id="pm-stat-failed">—</div><div class="lbl">Failed</div></div>
+ </div>
+
+ <div class="grid-2" style="margin-bottom:14px">
+   <!-- Method toggles -->
+   <div class="card">
+     <div class="section-title section-title-spaced">PAYMENT METHODS
+       <span id="payment-owner-note" style="display:none;color:var(--warn);font-size:11px;font-weight:400;margin-left:8px">Owner access required</span>
+     </div>
+     <div style="font-size:12px;color:var(--text3);margin-bottom:14px">Enable or disable methods available at checkout. At least one must stay active.</div>
+     <div class="payment-method-list" id="payment-method-list"><div style="color:var(--text3);font-family:var(--mono);font-size:12px">Loading...</div></div>
+     <div class="payment-saving-indicator" id="payment-saving-indicator"></div>
+   </div>
+
+   <!-- Breakdown chart -->
+   <div class="card">
+     <div class="section-title section-title-spaced">REVENUE BY METHOD</div>
+     <div id="pm-breakdown-chart" class="bar-chart">
+       <div style="color:var(--text3);font-family:var(--mono);font-size:12px">Loading...</div>
+     </div>
+   </div>
+ </div>
+
+ <!-- Transactions table -->
+ <div class="card">
+   <div class="section-header">
+     <div class="section-title">TRANSACTIONS</div>
+     <div style="display:flex;gap:8px;align-items:center">
+       <select class="filter-select" id="pm-filter-method" title="Filter by method" onchange="filterPaymentTxns()" style="font-size:12px">
+         <option value="all">All Methods</option>
+         <option value="cod">COD</option>
+         <option value="gcash">GCash</option>
+         <option value="maya">Maya</option>
+         <option value="card">Card</option>
+       </select>
+       <select class="filter-select" id="pm-filter-status" title="Filter by status" onchange="filterPaymentTxns()" style="font-size:12px">
+         <option value="all">All Status</option>
+         <option value="paid">Paid</option>
+         <option value="pending">Pending</option>
+         <option value="failed">Failed</option>
+         <option value="refunded">Refunded</option>
+       </select>
+     </div>
+   </div>
+   <div class="table-wrap">
+     <table>
+       <thead>
+         <tr>
+           <th>Txn ID</th>
+           <th>Order</th>
+           <th>Customer</th>
+           <th>Method</th>
+           <th>Amount</th>
+           <th>Status</th>
+           <th>Reference</th>
+           <th>Date</th>
+         </tr>
+       </thead>
+       <tbody id="payments-tbody">
+         <tr><td colspan="8" style="color:var(--text3);font-family:var(--mono);font-size:12px;padding:20px">Loading...</td></tr>
+       </tbody>
+     </table>
+   </div>
+ </div>
+
+ </div>
+
+ <!-- SETTINGS PAGE -->
+ <div class="page" id="page-settings">
+ <div class="grid-2">
+ <div class="card">
+ <div class="section-title section-title-spaced">STORE INFORMATION</div>
+ <div class="form-group"><label for="set-name">Store Name</label><input class="form-input" id="set-name" value="CloudChase Vape Shop"></div>
+ <div class="form-group"><label for="set-email">Contact Email</label><input class="form-input" id="set-email" value="hello@cloudchase.ph"></div>
+ <div class="form-group"><label for="set-phone">Contact Phone</label><input class="form-input" id="set-phone" value="+63 9XX XXX XXXX"></div>
+ <div class="form-group"><label for="set-addr">Address</label><input class="form-input" id="set-addr" value="Cagayan de Oro, Philippines"></div>
+ <button class="btn btn-primary" onclick="showToast('Store settings saved!')">Save Changes</button>
+ </div>
+ <div class="card">
+ <div class="section-title section-title-spaced">SHIPPING SETTINGS</div>
+ <div class="form-group"><label for="set-ship">Base Shipping Fee (₱)</label><input class="form-input" id="set-ship" value="50"></div>
+ <div class="form-group"><label for="set-free">Free Shipping Threshold (₱)</label><input class="form-input" id="set-free" value="1500"></div>
+ <div class="form-group"><label for="set-eta">Estimated Delivery (days)</label><input class="form-input" id="set-eta" value="3-5"></div>
+ <button class="btn btn-primary" onclick="showToast('Shipping settings saved!')">Save Changes</button>
+ </div>
+ </div>
+ </div>
+</div>
+
+<!-- ORDER DETAIL MODAL -->
+<div class="modal-overlay" id="order-modal">
+ <div class="modal modal-wide">
+ <button class="modal-close" onclick="closeOrderModal()"></button>
+ <div class="modal-title" id="modal-order-id">#CC-000000</div>
+ <div class="modal-subtitle" id="modal-order-date">Placed on —</div>
+ <div id="modal-order-body"></div>
+ <div class="modal-footer">
+ <button class="btn btn-ghost" onclick="closeOrderModal()">Close</button>
+ <button class="btn btn-primary" onclick="showToast('Order updated!');closeOrderModal()">Save Changes</button>
+ </div>
+ </div>
+</div>
+
+<!-- ADD PRODUCT MODAL -->
+<div class="modal-overlay" id="product-modal">
+ <div class="modal">
+ <button class="modal-close" onclick="document.getElementById('product-modal').classList.remove('open')"></button>
+ <div class="modal-title">Add New Product</div>
+ <div class="modal-subtitle">Fill in product details to add to the store</div>
+
+ <!-- Image Upload -->
+ <div class="form-group">
+ <label>Product Image</label>
+ <div class="img-upload-area" id="img-upload-area" onclick="document.getElementById('p-image-file').click()">
+ <div class="img-upload-preview" id="img-upload-preview">
+ <div class="img-upload-icon"></div>
+ <div class="img-upload-text">Click to upload image</div>
+ <div class="img-upload-sub">PNG, JPG, WEBP · Max 2MB</div>
+ </div>
+ </div>
+ <input type="file" id="p-image-file" accept="image/*" style="display:none" onchange="handleImageSelect(this)">
+ <input type="hidden" id="p-image-url">
+ </div>
+
+ <div class="form-group"><label for="p-name">Product Name</label><input class="form-input" id="p-name" placeholder="e.g. SMOK RPM 5 Pro"></div>
+ <div class="form-row">
+ <div class="form-group"><label for="p-price">Price (₱)</label><input class="form-input" id="p-price" type="number" placeholder="0.00"></div>
+ <div class="form-group"><label for="p-stock">Initial Stock</label><input class="form-input" id="p-stock" type="number" placeholder="0"></div>
+ </div>
+ <div class="form-group">
+ <label for="p-cat">Category</label>
+ <select class="form-input" id="p-cat" title="Product category">
+ <option>Devices</option><option>Pod Systems</option><option>E-Liquids</option><option>Coils</option><option>Accessories</option>
+ </select>
+ </div>
+ <div class="form-group"><label for="p-desc">Description</label><textarea class="form-input form-textarea" id="p-desc" placeholder="Product description..."></textarea></div>
+ <div class="modal-footer">
+ <button class="btn btn-ghost" onclick="document.getElementById('product-modal').classList.remove('open')">Cancel</button>
+ <button class="btn btn-primary" id="product-modal-submit" onclick="addProduct()">Add Product</button>
+ </div>
+ </div>
+</div>
+
+<!-- INVENTORY ADJUST MODAL -->
+<div class="modal-overlay" id="inv-modal">
+ <div class="modal modal-narrow">
+ <button class="modal-close" onclick="document.getElementById('inv-modal').classList.remove('open')"></button>
+ <div class="modal-title">Adjust Stock</div>
+ <div class="modal-subtitle" id="inv-modal-name">Product name</div>
+ <div class="form-group"><label for="inv-adj-type">Adjustment Type</label>
+ <select class="form-input" id="inv-adj-type" title="Stock adjustment type">
+ <option value="add">Add Stock (Restock)</option>
+ <option value="remove">Remove Stock (Damage/Loss)</option>
+ <option value="set">Set Exact Quantity</option>
+ </select>
+ </div>
+ <div class="form-group"><label for="inv-qty">Quantity</label><input class="form-input" id="inv-qty" type="number" min="0" placeholder="0"></div>
+ <div class="form-group"><label for="inv-note">Note (optional)</label><input class="form-input" id="inv-note" placeholder="e.g. New shipment from supplier"></div>
+ <div class="modal-footer">
+ <button class="btn btn-ghost" onclick="document.getElementById('inv-modal').classList.remove('open')">Cancel</button>
+ <button class="btn btn-primary" onclick="saveStockAdjust()">Save Adjustment</button>
+ </div>
+ </div>
+</div>
+
+<!-- RIDER ADD / EDIT MODAL -->
+<div class="modal-overlay" id="rider-modal">
+ <div class="modal modal-narrow">
+ <button class="modal-close" onclick="closeRiderModal()"></button>
+ <div class="modal-title" id="rider-modal-title">Add New Rider</div>
+ <div class="modal-subtitle" id="rider-modal-subtitle">Riders log in using their phone number and PIN.</div>
+
+ <div class="form-group">
+ <label for="r-name">Full Name</label>
+ <input class="form-input" id="r-name" placeholder="e.g. Juan dela Cruz">
+ </div>
+ <div class="form-group">
+ <label for="r-phone">Phone Number <span style="color:var(--text3);font-size:11px">(used to start shift)</span></label>
+ <input class="form-input" id="r-phone" placeholder="e.g. 09XX XXX XXXX" inputmode="tel">
+ </div>
+ <div class="form-group">
+ <label for="r-plate">Plate Number</label>
+ <input class="form-input" id="r-plate" placeholder="e.g. ABC 1234">
+ </div>
+
+ <div class="rider-modal-divider"><span>PIN</span></div>
+
+ <div class="form-group">
+ <label for="r-pin">4-Digit PIN <span id="r-pin-hint" style="color:var(--text3);font-size:11px"></span></label>
+ <div style="position:relative">
+ <input class="form-input" id="r-pin" type="password" maxlength="4" inputmode="numeric" pattern="[0-9]*" placeholder="••••" style="padding-right:48px;letter-spacing:0.4em;font-size:18px;font-family:var(--mono)">
+ <button type="button" onclick="toggleRiderPwd()" id="r-pwd-toggle" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text3);cursor:pointer;font-size:12px;font-family:var(--mono)">SHOW</button>
+ </div>
+ </div>
+
+ <div class="modal-footer">
+ <button class="btn btn-ghost" onclick="closeRiderModal()">Cancel</button>
+ <button class="btn btn-primary" id="rider-modal-submit" onclick="saveRider()">Add Rider</button>
+ </div>
+ </div>
+</div>
+
+<!-- CUSTOMER ACTION MODAL -->
+<div class="modal-overlay" id="customer-action-modal">
+ <div class="modal modal-narrow">
+ <button class="modal-close" onclick="closeCustomerActionModal()"></button>
+ <div class="modal-title" id="cam-title">Restrict Customer</div>
+ <div class="modal-subtitle" id="cam-subtitle">This will limit the customer's ability to place orders.</div>
+ <div class="cam-customer-card" id="cam-customer-card"></div>
+ <div class="form-group" id="cam-reason-group">
+ <label for="cam-reason">Reason <span style="color:var(--text3);font-size:11px">(shown in admin log)</span></label>
+ <select class="form-input" id="cam-reason">
+ <option value="suspicious_activity">Suspicious Activity</option>
+ <option value="payment_fraud">Payment Fraud</option>
+ <option value="repeated_cancellations">Repeated Cancellations</option>
+ <option value="abusive_behavior">Abusive Behavior</option>
+ <option value="underage">Underage Buyer</option>
+ <option value="chargeback">Chargeback / Dispute</option>
+ <option value="other">Other</option>
+ </select>
+ </div>
+ <div class="form-group" id="cam-note-group">
+ <label for="cam-note">Admin Note <span style="color:var(--text3);font-size:11px">(optional)</span></label>
+ <input class="form-input" id="cam-note" placeholder="e.g. Customer placed 3 fake orders">
+ </div>
+ <div class="cam-warning" id="cam-warning"></div>
+ <div class="modal-footer">
+ <button class="btn btn-ghost" onclick="closeCustomerActionModal()">Cancel</button>
+ <button class="btn" id="cam-confirm-btn" onclick="confirmCustomerAction()">Confirm</button>
+ </div>
+ </div>
+</div>
+
+<div id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="supabase-config.js"></script>
+<script src="cloudchase-admin.js"></script>
+</body>
+</html>

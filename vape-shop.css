@@ -362,20 +362,136 @@ footer.full{margin-left:56px}
 .pd-spec-heading{font-size:14px;font-weight:500;margin-bottom:8px;margin-top:20px}
 .pd-old-price{font-size:16px;color:var(--muted);text-decoration:line-through}
 
-/* RESPONSIVE */
+/* ═══════════════════════════════════════════════
+   RESPONSIVE — fluid type + full breakpoint stack
+═══════════════════════════════════════════════ */
+
+/* Fluid typography — scales smoothly between breakpoints */
+.hero h1        { font-size: clamp(22px, 5vw, 42px) }
+.page-title     { font-size: clamp(28px, 5vw, 42px) }
+#age-gate h1    { font-size: clamp(38px, 8vw, 64px) }
+.footer-brand h2{ font-size: clamp(22px, 4vw, 32px) }
+.section-title  { font-size: clamp(18px, 3vw, 24px) }
+
+/* ── TABLET (≤1024px) ─────────────────────────── */
+@media(max-width:1024px){
+  /* Shrink sidebar to icon-only, expand main */
+  #sidebar{ width:56px }
+  #sidebar .sidebar-label,
+  #sidebar .sidebar-link span:not(.icon),
+  #sidebar .sidebar-divider{ display:none }
+  #sidebar .sidebar-link{ justify-content:center; padding:10px 0 }
+  #sidebar .sidebar-section{ padding:0 8px }
+  #main{ margin-left:56px }
+  footer{ margin-left:56px }
+
+  /* Checkout: stack the order summary below the form */
+  .checkout-grid{ grid-template-columns:1fr }
+  .checkout-sticky{ position:static; top:auto }
+
+  /* Settings: sidebar nav becomes a horizontal strip */
+  .settings-grid{ grid-template-columns:1fr }
+  .settings-nav{ display:flex; flex-wrap:wrap; border-radius:10px }
+  .settings-nav-item{ border-bottom:none; border-right:1px solid var(--border); flex:1; min-width:100px; justify-content:center; text-align:center; font-size:12px; padding:10px 8px }
+  .settings-nav-item:last-child{ border-right:none }
+
+  /* Search bar: tighten max-width */
+  .search-bar{ max-width:320px }
+}
+
+/* ── MOBILE (≤768px) ──────────────────────────── */
 @media(max-width:768px){
-  #sidebar{transform:translateX(-220px);width:220px;transition:transform .3s}
-  #sidebar.open{transform:translateX(0)}
-  #sidebar.collapsed{width:220px;transform:translateX(-220px)}
-  #main,#main.full{margin-left:0}
-  footer,footer.full{margin-left:0}
-  .product-detail{grid-template-columns:1fr}
-  .checkout-grid{grid-template-columns:1fr}
-  .settings-grid{grid-template-columns:1fr}
-  .footer-grid{grid-template-columns:1fr 1fr}
-  footer{margin-left:0}
-  .hero h1{font-size:36px}
-  #menu-toggle{display:block}
+  /* Hamburger button visible, sidebar slides in as overlay */
+  #menu-toggle{ display:block }
+  #sidebar{
+    position:fixed;
+    top:64px; left:0; bottom:0;
+    width:220px !important;   /* override collapsed width */
+    transform:translateX(-220px);
+    transition:transform .3s;
+    /* restore hidden labels */
+    z-index:95;
+  }
+  #sidebar.open{ transform:translateX(0) }
+  /* re-show text labels inside the open mobile sidebar */
+  #sidebar.open .sidebar-label,
+  #sidebar.open .sidebar-link span:not(.icon),
+  #sidebar.open .sidebar-divider{ display:block }
+  #sidebar.open .sidebar-link{ justify-content:flex-start; padding:10px 8px }
+  #sidebar.open .sidebar-section{ padding:0 16px }
+
+  #main,#main.full{ margin-left:0 }
+  footer,footer.full{ margin-left:0; padding:32px 16px }
+
+  /* Navbar: hide guest auth buttons, shrink search */
+  .nav-actions #guest-btns{ display:none }
+  .search-bar{ max-width:none; flex:1; margin:0 8px }
+
+  /* Hero: stack stats below text */
+  .hero{ flex-direction:column; padding:20px 16px }
+  .hero-stats{
+    border-left:none;
+    border-top:1px solid var(--border);
+    padding-left:0; padding-top:16px;
+    width:100%;
+    justify-content:space-around;
+  }
+
+  /* Product detail: single column */
+  .product-detail{ grid-template-columns:1fr; gap:24px }
+  .product-detail-img{ height:260px }
+
+  /* Cart drawer: full-width on small phones */
+  #cart-drawer{ width:min(400px, 100vw) }
+
+  /* Footer: 2-col on tablets, but handle below */
+  .footer-grid{ grid-template-columns:1fr 1fr }
+}
+
+/* ── SMALL MOBILE (≤480px) ──────────────────────── */
+@media(max-width:480px){
+  /* Navbar: compact — hide search, show only icon */
+  #navbar{ padding:0 12px; gap:8px }
+  .search-bar{ display:none }  /* toggled open via JS if needed */
+  .nav-btn{ padding:8px 10px; font-size:12px }
+
+  /* Age gate: stack buttons vertically */
+  #age-gate .age-actions{ flex-direction:column; width:100%; max-width:280px }
+  #age-gate .age-actions .btn{ width:100%; justify-content:center }
+  #age-gate p{ font-size:13px }
+
+  /* Hero: trim padding */
+  .hero{ padding:16px 14px }
+  .hero-stats{ gap:12px }
+  .stat-item .num{ font-size:15px }
+
+  /* Products grid: 2 tight columns */
+  .products-grid{ grid-template-columns:repeat(2, 1fr); gap:8px }
+  .product-img-wrap,.product-img{ height:100px }
+
+  /* Promo banner: stack */
+  .promo-banner{ flex-direction:column; gap:12px; text-align:center }
+
+  /* Footer: single column */
+  .footer-grid{ grid-template-columns:1fr }
+
+  /* Form rows: stack on tiny screens */
+  .form-row{ grid-template-columns:1fr }
+
+  /* Checkout summary card: remove sticky */
+  .checkout-sticky{ position:static }
+
+  /* Modals: full-width on very small */
+  .modal{ padding:24px 16px; border-radius:12px }
+
+  /* Settings nav: wrap into 2 columns */
+  .settings-nav-item{ min-width:80px; font-size:11px; padding:8px 4px }
+
+  /* Success modal actions: stack */
+  .success-modal-actions{ flex-direction:column }
+
+  /* Cart drawer: full width */
+  #cart-drawer{ width:100vw }
 }
 
 /* EMPTY STATE */
@@ -547,4 +663,28 @@ footer.full{margin-left:56px}
   border-radius: 20px;
   padding: 3px 10px;
   flex-shrink: 0;
+}
+/* ── MOBILE SEARCH TOGGLE BUTTON ── */
+#search-toggle{
+  display:none;       /* shown via JS on mobile */
+  background:var(--bg3);
+  border:1px solid var(--border);
+  border-radius:8px;
+  padding:8px 10px;
+  color:var(--muted);
+  cursor:pointer;
+  font-size:15px;
+  align-items:center;
+  justify-content:center;
+  flex-shrink:0;
+}
+#search-toggle:hover{ border-color:var(--accent); color:var(--accent) }
+
+/* ── TABLET SIDEBAR TEXT HIDDEN ── */
+@media(max-width:1024px){
+  #sidebar:not(.open) .sidebar-label,
+  #sidebar:not(.open) .sidebar-link span:not(.icon),
+  #sidebar:not(.open) .sidebar-divider{ display:none }
+  #sidebar:not(.open) .sidebar-link{ justify-content:center; padding:10px 0 }
+  #sidebar:not(.open) .sidebar-section{ padding:0 8px }
 }
